@@ -1,0 +1,20 @@
+version: "3"
+services:
+  web:
+    # The web service uses an image that’s built from the Dockerfile in the current directory
+    build: .
+    # mount the current directory (".") as /code in the container
+    # if the developer changes the code in the current directory of the host machine, changes will be reflected
+    # under /code in the container. Good for developing!
+    volumes:
+      - .:/code
+    # Flask will reload after developer makes changes to the code
+    environment:
+      FLASK_ENV: development
+    # Bind TCP port 5000 on the host machine to port 5000 of the container
+    # For details on port mapping, see https://docs.docker.com/network/links/#connect-using-network-port-mapping
+    ports:
+      - "5000:5000"
+  redis:
+    # The "redis" service uses a pre-package image from dockerhub
+    image: "redis:alpine"

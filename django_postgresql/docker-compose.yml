@@ -1,0 +1,35 @@
+version: "3"
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    # docker-compose will scan ".env" file in search for DATABASE_NAME, DATABASE_USER, and DATABASE_PASSWORD
+    # but will not elevate these to the status of environment variables
+    # Notice the rows do not start with "- " as in other sections
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+  web:
+    build: .
+    # run the development server
+    command: python composeexample/manage.py runserver 0.0.0.0:8000
+    # mount the current directory (".") as /code in the container
+    # if the developer changes the code in the current directory of the host machine, changes will be reflected
+    # under /code in the container. Good for developing!
+    volumes:
+      - .:/code
+    # Bind TCP port 8000 on the host machine to port 8000 of the container
+    # For details on port mapping, see https://docs.docker.com/network/links/#connect-using-network-port-mapping
+    ports:
+      - "8000:8000"
+    # Load all variables defined in ".env" file located on the same directory as this file and elevate them
+    # to the status of environment variables
+    env_file:
+     - .env
+    # start `web` service only after starting `db` service. However, building `web` service will not wait until
+    # `db` service has completed building (https://docs.docker.com/compose/compose-file/compose-file-v3/#deploy)
+    depends_on:
+      - db
